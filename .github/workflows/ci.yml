@@ -1,0 +1,124 @@
+name: CI
+
+on:
+  push:
+    branches: [ main, develop ]
+  pull_request:
+    branches: [ main, develop ]
+  workflow_dispatch:
+
+jobs:
+  test:
+    name: Test Python ${{ matrix.python-version }}
+    runs-on: ubuntu-latest
+
+    strategy:
+      fail-fast: false
+      matrix:
+        python-version: ["3.8", "3.9", "3.10", "3.11", "3.12"]
+
+    services:
+      postgres:
+        image: postgres:16
+        env:
+          POSTGRES_PASSWORD: postgres
+          POSTGRES_DB: testdb
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+        ports:
+          - 5432:5432
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Python ${{ matrix.python-version }}
+        uses: actions/setup-python@v5
+        with:
+          python-version: ${{ matrix.python-version }}
+          cache: 'pip'
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -e ".[dev]"
+          pip install pytest-cov coverage
+
+      - name: Set up PostgreSQL database
+        env:
+          PGPASSWORD: postgres
+        run: |
+          # Create test table
+          psql -h localhost -U postgres -d testdb -c "
+            CREATE TABLE IF NOT EXISTS json_objects (
+              id SERIAL PRIMARY KEY,
+              json_object JSONB UNIQUE NOT NULL
+            );
+          "
+          # Create GIN index for better JSONB query performance
+          psql -h localhost -U postgres -d testdb -c "
+            CREATE INDEX IF NOT EXISTS idx_json_objects_json_object
+            ON json_objects USING gin(json_object);
+          "
+
+      - name: Run unit tests (excluding integration)
+        run: |
+          pytest tests/ -v \
+            -m "not integration" \
+            --cov=src/json_register \
+            --cov-report=term \
+            --cov-report=xml
+
+      - name: Run integration tests
+        env:
+          TEST_DB_HOST: localhost
+          TEST_DB_PORT: 5432
+          TEST_DB_NAME: testdb
+          TEST_DB_USER: postgres
+          TEST_DB_PASSWORD: postgres
+          TEST_DB_TABLE: json_objects
+          TEST_DB_ID_COLUMN: id
+          TEST_DB_JSONB_COLUMN: json_object
+        run: |
+          pytest tests/test_integration.py -v -m integration
+
+      - name: Upload coverage to Codecov
+        uses: codecov/codecov-action@v4
+        if: matrix.python-version == '3.12'
+        with:
+          file: ./coverage.xml
+          fail_ci_if_error: false
+          token: ${{ secrets.CODECOV_TOKEN }}
+
+  lint:
+    name: Code Quality
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: 'pip'
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -e ".[dev]"
+
+      - name: Check code formatting with Black
+        run: |
+          black --check src/ tests/
+
+      - name: Lint with Ruff
+        run: |
+          ruff check src/ tests/
+
+      - name: Type check with mypy
+        run: |
+          mypy src/json_register/
+        continue-on-error: true
