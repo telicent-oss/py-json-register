@@ -193,15 +193,17 @@ jobs:
         run: |
           python scripts/track_performance.py
 
-      - name: Commit performance results
+      - name: Display performance summary
         run: |
-          git config --local user.email "github-actions[bot]@users.noreply.github.com"
-          git config --local user.name "github-actions[bot]"
-          git add PERFORMANCE.md
-          git diff --staged --quiet || git commit -m "📊 Update performance benchmarks [skip ci]"
+          echo "## 📊 Performance Benchmark Results" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          cat PERFORMANCE.md >> $GITHUB_STEP_SUMMARY
 
-      - name: Push changes
-        uses: ad-m/github-push-action@master
+      - name: Upload performance results
+        uses: actions/upload-artifact@v4
         with:
-          github_token: ${{ secrets.GITHUB_TOKEN }}
-          branch: ${{ github.ref }}
+          name: performance-results-${{ github.sha }}
+          path: |
+            PERFORMANCE.md
+            .benchmarks/
+          retention-days: 90
