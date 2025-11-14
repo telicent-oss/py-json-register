@@ -1,8 +1,11 @@
 # py-json-register
 
+[![Development Status](https://img.shields.io/badge/status-beta-yellow.svg)](https://github.com/telicent-oss/py-json-register)
 [![License](https://img.shields.io/badge/license-Apache--2.0-blue.svg)](LICENSE)
 [![Python Version](https://img.shields.io/badge/python-3.8%2B-blue.svg)](https://www.python.org)
 [![CI](https://github.com/telicent-oss/py-json-register/actions/workflows/ci.yml/badge.svg)](https://github.com/telicent-oss/py-json-register/actions/workflows/ci.yml)
+
+> **⚠️ Beta Software**: This library is in active development. The API may change between versions.
 
 A JSON registration cache for Python with PostgreSQL backend.
 

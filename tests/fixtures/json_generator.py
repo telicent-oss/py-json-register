@@ -55,9 +55,7 @@ class RandomJsonGenerator:
             value_type = self.rng.choice(["string", "int", "float", "bool", "null"])
         else:
             # Can generate any type including nested structures
-            value_type = self.rng.choice(
-                ["string", "int", "float", "bool", "null", "list", "dict"]
-            )
+            value_type = self.rng.choice(["string", "int", "float", "bool", "null", "list", "dict"])
 
         if value_type == "string":
             return self.generate_string()

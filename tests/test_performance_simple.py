@@ -144,8 +144,12 @@ class TestPerformance:
         # Print results with clear labels
         print("\n=== 200 Objects: Three Access Patterns ===")
         print(f"1. DB WRITE (cache miss, DB miss):   {write_time * 1000:8.2f}ms")
-        print(f"2. CACHE HIT (warm cache):            {cache_warm_time * 1000:8.2f}ms ({write_time / cache_warm_time:5.1f}x faster)")
-        print(f"3. DB READ (cache miss, DB hit):      {db_read_time * 1000:8.2f}ms ({write_time / db_read_time:5.1f}x vs write)")
+        print(
+            f"2. CACHE HIT (warm cache):            {cache_warm_time * 1000:8.2f}ms ({write_time / cache_warm_time:5.1f}x faster)"
+        )
+        print(
+            f"3. DB READ (cache miss, DB hit):      {db_read_time * 1000:8.2f}ms ({write_time / db_read_time:5.1f}x vs write)"
+        )
         print(f"\nCache speedup over DB read: {db_read_time / cache_warm_time:.1f}x")
 
         # Verify expected performance characteristics
