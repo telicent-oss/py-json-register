@@ -150,8 +150,9 @@ def create_performance_markdown(
         f.write(f"**Date:** {git_info['date']}\n\n")
 
         # Group benchmarks by sync/async
-        sync_benchmarks = [b for b in benchmarks if "Sync" in b["name"]]
-        async_benchmarks = [b for b in benchmarks if "Async" in b["name"]]
+        # Treat tests as sync unless they have "Async" in the name
+        async_benchmarks = [b for b in benchmarks if "Async" in b["name"] or "async" in b["name"]]
+        sync_benchmarks = [b for b in benchmarks if b not in async_benchmarks]
 
         # Write sync benchmarks
         if sync_benchmarks:
