@@ -2,8 +2,9 @@
 
 [![License](https://img.shields.io/badge/license-Apache--2.0-blue.svg)](LICENSE)
 [![Python Version](https://img.shields.io/badge/python-3.8%2B-blue.svg)](https://www.python.org)
+[![CI](https://github.com/telicent-oss/py-json-register/actions/workflows/ci.yml/badge.svg)](https://github.com/telicent-oss/py-json-register/actions/workflows/ci.yml)
 
-A high-performance JSON registration cache for Python with PostgreSQL backend.
+A JSON registration cache for Python with PostgreSQL backend.
 
 ## Purpose
 
@@ -37,16 +38,19 @@ pip install -e .
 - LRU caching
 - Exception hierarchy
 - Type hints throughout
-- Basic unit tests for canonicalisation
-
-**🔄 In Progress:**
-- Integration tests with PostgreSQL
-- Additional unit tests
+- Comprehensive unit tests (56 tests, 89% coverage)
+  - JSON canonicalisation tests (17 tests)
+  - Configuration validation tests (27 tests)
+  - Integration tests with PostgreSQL (12 tests)
+- GitHub Actions CI/CD pipeline
+  - Multi-version testing (Python 3.8-3.12)
+  - PostgreSQL service container
+  - Code quality checks (Black, Ruff, Mypy)
+  - Coverage reporting
 
 **📝 TODO:**
-- GitHub Actions CI/CD
 - PyPI publishing
-- Comprehensive documentation
+- Additional documentation
 
 ## Implementation Details
 

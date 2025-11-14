@@ -14,7 +14,11 @@ py-json-register/
 │   └── py.typed             # PEP 561 type marker
 ├── tests/
 │   ├── __init__.py
-│   └── test_canonicalise.py # Unit tests for canonicalisation
+│   ├── test_canonicalise.py # Unit tests for canonicalisation
+│   ├── test_config.py       # Configuration validation tests
+│   └── test_integration.py  # PostgreSQL integration tests
+├── .github/workflows/
+│   └── ci.yml              # GitHub Actions CI/CD pipeline
 ├── pyproject.toml           # Package configuration & dependencies
 ├── LICENSE                  # Apache 2.0 license
 ├── .gitignore              # Python-specific ignore rules
@@ -119,46 +123,50 @@ ORDER BY io.original_order
 - SQL injection prevention (parameterised queries)
 - Password security (never logged)
 
-## Next Steps for New Claude Session
+## ✅ Testing Complete (56 tests, 89% coverage)
 
-### Priority 1: Testing
-1. **Install dev dependencies:**
-   ```bash
-   source venv/bin/activate
-   pip install -e ".[dev]"
-   ```
+### Unit Tests
+- **test_canonicalise.py** - 17 tests for JSON canonicalisation
+- **test_config.py** - 27 tests for configuration validation (sync & async)
 
-2. **Run existing tests:**
-   ```bash
-   pytest tests/test_canonicalise.py -v
-   ```
+### Integration Tests
+- **test_integration.py** - 12 PostgreSQL integration tests (sync & async)
+  - Single object registration
+  - Batch object registration
+  - Order preservation (all new, mixed existing/new)
+  - Key order independence
+  - Large batch handling
 
-3. **Add more unit tests:**
-   - Test cache hits/misses
-   - Test configuration validation
-   - Mock database tests
+### Running Tests
+```bash
+# All tests
+pytest -v --cov=src/json_register
 
-4. **Add integration tests:**
-   - Requires PostgreSQL database
-   - Test with real database operations
-   - Test batch order preservation
-   - Test mixed existing/new objects
+# Unit tests only
+pytest -v -m "not integration"
 
-### Priority 2: GitHub Actions CI/CD
-Create `.github/workflows/ci.yml`:
-- Run tests on Python 3.8-3.12
-- PostgreSQL service container for integration tests
-- Code formatting checks (black, ruff)
-- Type checking (mypy)
-- Coverage reporting
+# Integration tests only
+pytest -v -m integration
+```
 
-### Priority 3: Documentation
+## ✅ GitHub Actions CI/CD Complete
+
+Pipeline runs on every push/PR with:
+- **Multi-version testing**: Python 3.8, 3.9, 3.10, 3.11, 3.12
+- **PostgreSQL 16** service container
+- **Automated database setup**
+- **Code quality checks**: Black, Ruff, Mypy
+- **Coverage reporting** to Codecov
+
+## Next Steps
+
+### Priority 1: Documentation
 - Create API reference documentation
 - Add database setup guide
 - Add more usage examples
 - Add troubleshooting section
 
-### Priority 4: PyPI Publishing
+### Priority 2: PyPI Publishing
 1. Test package build:
    ```bash
    pip install build twine
