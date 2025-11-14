@@ -14,11 +14,17 @@ py-json-register/
 │   └── py.typed             # PEP 561 type marker
 ├── tests/
 │   ├── __init__.py
-│   ├── test_canonicalise.py # Unit tests for canonicalisation
-│   ├── test_config.py       # Configuration validation tests
-│   └── test_integration.py  # PostgreSQL integration tests
+│   ├── test_canonicalise.py       # Unit tests for canonicalisation
+│   ├── test_config.py             # Configuration validation tests
+│   ├── test_integration.py        # PostgreSQL integration tests
+│   ├── test_performance_simple.py # Performance benchmarks
+│   └── fixtures/
+│       ├── __init__.py
+│       └── json_generator.py      # Random JSON data generator
+├── scripts/
+│   └── track_performance.py       # Performance tracking script
 ├── .github/workflows/
-│   └── ci.yml              # GitHub Actions CI/CD pipeline
+│   └── ci.yml                     # GitHub Actions CI/CD pipeline
 ├── pyproject.toml           # Package configuration & dependencies
 ├── LICENSE                  # Apache 2.0 license
 ├── .gitignore              # Python-specific ignore rules
@@ -157,6 +163,44 @@ Pipeline runs on every push/PR with:
 - **Automated database setup**
 - **Code quality checks**: Black, Ruff, Mypy
 - **Coverage reporting** to Codecov
+
+## ✅ Performance Testing Infrastructure
+
+### Random JSON Generator
+- **Location**: `tests/fixtures/json_generator.py`
+- Configurable complexity (size, depth, nesting)
+- Predefined profiles: small, medium, large, deep, wide
+- Batch generation with uniqueness guarantees
+- Seeded for reproducibility
+
+### Performance Benchmark Suite
+- **Location**: `tests/test_performance_simple.py`
+- Uses `pytest-benchmark` for accurate measurements
+- Benchmarks:
+  - Single object registration (cache miss/hit)
+  - Batch operations (10, 50, 100 objects)
+  - Write/Cache/DB read comparisons
+  - Sequential vs batch performance
+  - Batch size scaling analysis
+
+### Performance Tracking
+- **Script**: `scripts/track_performance.py`
+- Runs benchmarks and logs results to `PERFORMANCE.md`
+- Tracks git commit information
+- Monitors performance across commits
+- Helps detect regressions
+
+### Running Benchmarks
+```bash
+# Run all performance tests
+pytest tests/test_performance_simple.py -v --benchmark-only
+
+# Track performance and log to markdown
+python scripts/track_performance.py --baseline
+
+# Run with output
+pytest tests/test_performance_simple.py -v -s
+```
 
 ## Next Steps
 

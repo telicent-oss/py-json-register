@@ -42,6 +42,11 @@ pip install -e .
   - JSON canonicalisation tests (17 tests)
   - Configuration validation tests (27 tests)
   - Integration tests with PostgreSQL (12 tests)
+- Performance testing infrastructure
+  - Random JSON data generator
+  - Benchmark suite with pytest-benchmark
+  - Performance tracking across commits
+  - Write/Cache/DB read comparisons
 - GitHub Actions CI/CD pipeline
   - Multi-version testing (Python 3.8-3.12)
   - PostgreSQL service container
@@ -304,6 +309,38 @@ asyncio.run(main())
    - Standard library `json.dumps` with `sort_keys=True`
    - Sufficient for key normalisation
    - If RFC 8785 compliance needed later, can use `canonicaljson` package
+
+### Limitations and Considerations
+
+#### JSONB Object Size Limit
+
+PostgreSQL's **UNIQUE constraint** on JSONB columns uses a btree index, which has a hard limit of **2,704 bytes** per indexed value (1/3 of an 8KB page). This means JSON objects larger than ~2.7KB cannot be registered.
+
+**When this is a concern:**
+- Very large JSON objects (e.g., deeply nested structures, many keys, or large string values)
+- Objects with 100+ fields or nesting depth > 5
+
+**When this is NOT a concern (most use cases):**
+- Small to medium JSON objects (< 2KB)
+- Access control labels, configuration objects, metadata
+- Most real-world JSON API responses
+
+**Workarounds if needed:**
+1. **Hash-based uniqueness** - Store MD5/SHA256 hash with UNIQUE constraint instead of full JSONB:
+   ```sql
+   CREATE TABLE json_objects (
+       id SERIAL PRIMARY KEY,
+       json_object JSONB NOT NULL,
+       json_hash TEXT UNIQUE NOT NULL
+   );
+   CREATE INDEX idx_json_objects_gin ON json_objects USING gin(json_object);
+   ```
+
+2. **Remove UNIQUE constraint** - Handle deduplication in application logic
+
+3. **Split large objects** - Normalise into multiple smaller tables
+
+For reference, analysis of production data shows typical objects range from 200-500 bytes, well within the limit.
 
 ### Testing Requirements
 
