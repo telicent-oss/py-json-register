@@ -202,6 +202,83 @@ class TestJsonRegisterCacheIntegration:
 
         cache.close()
 
+    def test_batch_order_preservation_stress(self):
+        """Stress test order preservation with complex mix of existing and new objects."""
+        cache = JsonRegisterCache(**TEST_CONFIG)
+
+        timestamp = int(time.time() * 1000000)
+
+        # Pre-register a set of objects at known positions
+        pre_registered = [
+            {"type": "pre", "id": 0, "timestamp": timestamp},
+            {"type": "pre", "id": 2, "timestamp": timestamp},
+            {"type": "pre", "id": 5, "timestamp": timestamp},
+            {"type": "pre", "id": 7, "timestamp": timestamp},
+            {"type": "pre", "id": 9, "timestamp": timestamp},
+        ]
+
+        pre_registered_ids = {}
+        for obj in pre_registered:
+            obj_id = cache.register_object(obj)
+            pre_registered_ids[obj["id"]] = obj_id
+
+        # Create a batch with interleaved existing and new objects
+        batch = [
+            pre_registered[0],  # index 0: existing
+            {"type": "new", "id": 1, "timestamp": timestamp},  # index 1: new
+            pre_registered[1],  # index 2: existing
+            {"type": "new", "id": 3, "timestamp": timestamp},  # index 3: new
+            {"type": "new", "id": 4, "timestamp": timestamp},  # index 4: new
+            pre_registered[2],  # index 5: existing
+            {"type": "new", "id": 6, "timestamp": timestamp},  # index 6: new
+            pre_registered[3],  # index 7: existing
+            {"type": "new", "id": 8, "timestamp": timestamp},  # index 8: new
+            pre_registered[4],  # index 9: existing
+        ]
+
+        # Register batch and get IDs
+        batch_ids = cache.register_batch_objects(batch)
+
+        assert len(batch_ids) == 10, "Should return 10 IDs"
+
+        # Verify existing objects have their pre-registered IDs
+        assert batch_ids[0] == pre_registered_ids[0], "Index 0 should have pre-registered ID"
+        assert batch_ids[2] == pre_registered_ids[2], "Index 2 should have pre-registered ID"
+        assert batch_ids[5] == pre_registered_ids[5], "Index 5 should have pre-registered ID"
+        assert batch_ids[7] == pre_registered_ids[7], "Index 7 should have pre-registered ID"
+        assert batch_ids[9] == pre_registered_ids[9], "Index 9 should have pre-registered ID"
+
+        # Verify new objects got new IDs
+        new_ids = [batch_ids[1], batch_ids[3], batch_ids[4], batch_ids[6], batch_ids[8]]
+        assert len(set(new_ids)) == 5, "All new objects should have unique IDs"
+
+        # Verify all IDs are unique
+        assert len(set(batch_ids)) == 10, "All IDs in batch should be unique"
+
+        # Verify order is preserved by re-registering each object individually
+        for i, obj in enumerate(batch):
+            individual_id = cache.register_object(obj)
+            assert (
+                batch_ids[i] == individual_id
+            ), f"Object at index {i} should have consistent ID: batch={batch_ids[i]}, individual={individual_id}"
+
+        # Test with duplicates in the same batch
+        batch_with_dupes = [
+            {"type": "dupe_test", "value": "A", "timestamp": timestamp},
+            {"type": "dupe_test", "value": "B", "timestamp": timestamp},
+            {"type": "dupe_test", "value": "A", "timestamp": timestamp},  # duplicate of index 0
+            {"type": "dupe_test", "value": "C", "timestamp": timestamp},
+            {"type": "dupe_test", "value": "B", "timestamp": timestamp},  # duplicate of index 1
+        ]
+
+        dupe_ids = cache.register_batch_objects(batch_with_dupes)
+        assert len(dupe_ids) == 5, "Should return 5 IDs even with duplicates"
+        assert dupe_ids[0] == dupe_ids[2], "Duplicate objects should have same ID"
+        assert dupe_ids[1] == dupe_ids[4], "Duplicate objects should have same ID"
+        assert len(set(dupe_ids)) == 3, "Should have 3 unique IDs (A, B, C)"
+
+        cache.close()
+
 
 @pytest.mark.integration
 @pytest.mark.asyncio
@@ -352,5 +429,82 @@ class TestJsonRegisterCacheAsyncIntegration:
         assert (
             batch_ids == batch_ids_repeat
         ), "Re-registering same batch should return same IDs in same order"
+
+        await cache.close()
+
+    async def test_batch_order_preservation_stress(self):
+        """Stress test order preservation with complex mix of existing and new objects (async)."""
+        cache = await JsonRegisterCacheAsync.create(**TEST_CONFIG)
+
+        timestamp = int(time.time() * 1000000)
+
+        # Pre-register a set of objects at known positions
+        pre_registered = [
+            {"type": "async_pre", "id": 0, "timestamp": timestamp},
+            {"type": "async_pre", "id": 2, "timestamp": timestamp},
+            {"type": "async_pre", "id": 5, "timestamp": timestamp},
+            {"type": "async_pre", "id": 7, "timestamp": timestamp},
+            {"type": "async_pre", "id": 9, "timestamp": timestamp},
+        ]
+
+        pre_registered_ids = {}
+        for obj in pre_registered:
+            obj_id = await cache.register_object(obj)
+            pre_registered_ids[obj["id"]] = obj_id
+
+        # Create a batch with interleaved existing and new objects
+        batch = [
+            pre_registered[0],  # index 0: existing
+            {"type": "async_new", "id": 1, "timestamp": timestamp},  # index 1: new
+            pre_registered[1],  # index 2: existing
+            {"type": "async_new", "id": 3, "timestamp": timestamp},  # index 3: new
+            {"type": "async_new", "id": 4, "timestamp": timestamp},  # index 4: new
+            pre_registered[2],  # index 5: existing
+            {"type": "async_new", "id": 6, "timestamp": timestamp},  # index 6: new
+            pre_registered[3],  # index 7: existing
+            {"type": "async_new", "id": 8, "timestamp": timestamp},  # index 8: new
+            pre_registered[4],  # index 9: existing
+        ]
+
+        # Register batch and get IDs
+        batch_ids = await cache.register_batch_objects(batch)
+
+        assert len(batch_ids) == 10, "Should return 10 IDs"
+
+        # Verify existing objects have their pre-registered IDs
+        assert batch_ids[0] == pre_registered_ids[0], "Index 0 should have pre-registered ID"
+        assert batch_ids[2] == pre_registered_ids[2], "Index 2 should have pre-registered ID"
+        assert batch_ids[5] == pre_registered_ids[5], "Index 5 should have pre-registered ID"
+        assert batch_ids[7] == pre_registered_ids[7], "Index 7 should have pre-registered ID"
+        assert batch_ids[9] == pre_registered_ids[9], "Index 9 should have pre-registered ID"
+
+        # Verify new objects got new IDs
+        new_ids = [batch_ids[1], batch_ids[3], batch_ids[4], batch_ids[6], batch_ids[8]]
+        assert len(set(new_ids)) == 5, "All new objects should have unique IDs"
+
+        # Verify all IDs are unique
+        assert len(set(batch_ids)) == 10, "All IDs in batch should be unique"
+
+        # Verify order is preserved by re-registering each object individually
+        for i, obj in enumerate(batch):
+            individual_id = await cache.register_object(obj)
+            assert (
+                batch_ids[i] == individual_id
+            ), f"Object at index {i} should have consistent ID: batch={batch_ids[i]}, individual={individual_id}"
+
+        # Test with duplicates in the same batch
+        batch_with_dupes = [
+            {"type": "async_dupe_test", "value": "A", "timestamp": timestamp},
+            {"type": "async_dupe_test", "value": "B", "timestamp": timestamp},
+            {"type": "async_dupe_test", "value": "A", "timestamp": timestamp},  # duplicate of index 0
+            {"type": "async_dupe_test", "value": "C", "timestamp": timestamp},
+            {"type": "async_dupe_test", "value": "B", "timestamp": timestamp},  # duplicate of index 1
+        ]
+
+        dupe_ids = await cache.register_batch_objects(batch_with_dupes)
+        assert len(dupe_ids) == 5, "Should return 5 IDs even with duplicates"
+        assert dupe_ids[0] == dupe_ids[2], "Duplicate objects should have same ID"
+        assert dupe_ids[1] == dupe_ids[4], "Duplicate objects should have same ID"
+        assert len(set(dupe_ids)) == 3, "Should have 3 unique IDs (A, B, C)"
 
         await cache.close()

@@ -72,7 +72,7 @@ def build_register_batch_query(
     return f"""
         WITH input_objects AS (
             SELECT
-                row_number() OVER () as original_order,
+                ord as original_order,
                 value as json_value
             FROM unnest({placeholder}::jsonb[]) WITH ORDINALITY AS t(value, ord)
         ),
