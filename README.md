@@ -18,16 +18,20 @@ This library provides a method `register_object` where JSON is provided as the i
 
 ## Installation
 
-```bash
-pip install json-register
-```
+> **Note**: This package is currently in beta and not yet published to PyPI.
 
-Or install from source:
+**Install from source:**
 
 ```bash
 git clone https://github.com/telicent-oss/py-json-register.git
 cd py-json-register
 pip install -e .
+```
+
+**Install from TestPyPI (when available):**
+
+```bash
+pip install -i https://test.pypi.org/simple/ json-register
 ```
 
 ## Current Status
