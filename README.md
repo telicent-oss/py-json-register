@@ -45,9 +45,10 @@ pip install -i https://test.pypi.org/simple/ json-register
 - LRU caching
 - Exception hierarchy
 - Type hints throughout
-- Comprehensive unit tests (56 tests, 89% coverage)
+- Comprehensive unit tests (74 tests, 90% coverage)
   - JSON canonicalisation tests (17 tests)
   - Configuration validation tests (27 tests)
+  - Error handling tests (15 tests)
   - Integration tests with PostgreSQL (12 tests)
 - Performance testing infrastructure
   - Random JSON data generator
@@ -95,7 +96,7 @@ Both classes will accept the following parameters on initialisation:
 - `database_port` (int): PostgreSQL port (default: 5432)
 - `database_user` (str): PostgreSQL user
 - `database_password` (str): PostgreSQL password
-- `lru_cache_size` (int): Size of the LRU cache
+- `lru_cache_size` (int): Size of the LRU cache (default: 1000)
 - `table_name` (str): Name of the table to store JSON objects (default: "json_objects")
 - `id_column` (str): Name of the ID column (default: "id")
 - `jsonb_column` (str): Name of the JSONB column (default: "json_object")
@@ -228,17 +229,13 @@ CREATE INDEX idx_json_objects_json_object ON json_objects USING gin(json_object)
 ```python
 from json_register import JsonRegisterCache
 
+# Minimal configuration (uses sensible defaults)
 cache = JsonRegisterCache(
     database_name="mydb",
     database_host="localhost",
     database_port=5432,
     database_user="user",
-    database_password="pass",
-    lru_cache_size=1000,
-    table_name="json_objects",
-    id_column="id",
-    jsonb_column="json_object",
-    pool_size=10
+    database_password="pass"
 )
 
 # Register single object
@@ -264,17 +261,13 @@ from json_register import JsonRegisterCacheAsync
 import asyncio
 
 async def main():
+    # Minimal configuration (uses sensible defaults)
     cache = await JsonRegisterCacheAsync.create(
         database_name="mydb",
         database_host="localhost",
         database_port=5432,
         database_user="user",
-        database_password="pass",
-        lru_cache_size=1000,
-        table_name="json_objects",
-        id_column="id",
-        jsonb_column="json_object",
-        pool_size=10
+        database_password="pass"
     )
 
     # Register single object

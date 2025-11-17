@@ -23,7 +23,8 @@ from psycopg.rows import tuple_row
 from psycopg_pool import ConnectionPool
 
 from ._canonicalise import JsonType, canonicalise_json
-from .exceptions import ConfigurationError, ConnectionError as ConnError, InvalidResponseError
+from ._utils import build_register_batch_query, build_register_query, validate_config
+from .exceptions import ConnectionError as ConnError, InvalidResponseError
 
 
 class JsonRegisterCache:
@@ -40,12 +41,7 @@ class JsonRegisterCache:
         ...     database_host="localhost",
         ...     database_port=5432,
         ...     database_user="user",
-        ...     database_password="pass",
-        ...     lru_cache_size=1000,
-        ...     table_name="json_objects",
-        ...     id_column="id",
-        ...     jsonb_column="json_object",
-        ...     pool_size=10
+        ...     database_password="pass"
         ... )
         >>> id1 = cache.register_object({"name": "Alice", "age": 30})
         >>> id2 = cache.register_object({"name": "Alice", "age": 30})
@@ -59,7 +55,7 @@ class JsonRegisterCache:
         database_port: int,
         database_user: str,
         database_password: str,
-        lru_cache_size: int,
+        lru_cache_size: int = 1000,
         table_name: str = "json_objects",
         id_column: str = "id",
         jsonb_column: str = "json_object",
@@ -74,7 +70,7 @@ class JsonRegisterCache:
             database_port: PostgreSQL port
             database_user: PostgreSQL user
             database_password: PostgreSQL password
-            lru_cache_size: Size of the LRU cache
+            lru_cache_size: Size of the LRU cache (default: 1000)
             table_name: Name of the table to store JSON objects (default: "json_objects")
             id_column: Name of the ID column (default: "id")
             jsonb_column: Name of the JSONB column (default: "json_object")
@@ -85,7 +81,7 @@ class JsonRegisterCache:
             ConnectionError: If database connection fails
         """
         # Validate configuration
-        self._validate_config(
+        validate_config(
             database_name,
             database_host,
             database_port,
@@ -125,85 +121,13 @@ class JsonRegisterCache:
         except psycopg.Error as e:
             raise ConnError(f"Failed to create connection pool: {e}") from e
 
-        # Pre-build SQL queries
-        self._register_query = self._build_register_query()
-        self._register_batch_query = self._build_register_batch_query()
-
-    def _validate_config(
-        self,
-        database_name: str,
-        database_host: str,
-        database_port: int,
-        database_user: str,
-        table_name: str,
-        id_column: str,
-        jsonb_column: str,
-        lru_cache_size: int,
-        pool_size: int,
-    ) -> None:
-        """Validate configuration parameters."""
-        if not database_name:
-            raise ConfigurationError("database_name cannot be empty")
-        if not database_host:
-            raise ConfigurationError("database_host cannot be empty")
-        if not (1 <= database_port <= 65535):
-            raise ConfigurationError("database_port must be between 1 and 65535")
-        if not database_user:
-            raise ConfigurationError("database_user cannot be empty")
-        if not table_name or not table_name.replace("_", "").isalnum():
-            raise ConfigurationError("table_name must be alphanumeric (with underscores)")
-        if not id_column or not id_column.replace("_", "").isalnum():
-            raise ConfigurationError("id_column must be alphanumeric (with underscores)")
-        if not jsonb_column or not jsonb_column.replace("_", "").isalnum():
-            raise ConfigurationError("jsonb_column must be alphanumeric (with underscores)")
-        if lru_cache_size < 1:
-            raise ConfigurationError("lru_cache_size must be at least 1")
-        if pool_size < 1:
-            raise ConfigurationError("pool_size must be at least 1")
-
-    def _build_register_query(self) -> str:
-        """Build SQL query for registering a single object."""
-        return f"""
-            WITH inserted AS (
-                INSERT INTO {self._table_name} ({self._jsonb_column})
-                VALUES (%s)
-                ON CONFLICT ({self._jsonb_column}) DO NOTHING
-                RETURNING {self._id_column}
-            )
-            SELECT {self._id_column} FROM inserted
-            UNION ALL
-            SELECT {self._id_column} FROM {self._table_name}
-            WHERE {self._jsonb_column} = %s
-              AND NOT EXISTS (SELECT 1 FROM inserted)
-            LIMIT 1
-        """
-
-    def _build_register_batch_query(self) -> str:
-        """Build SQL query for registering multiple objects in batch."""
-        return f"""
-            WITH input_objects AS (
-                SELECT
-                    row_number() OVER () as original_order,
-                    value as json_value
-                FROM unnest(%s::jsonb[]) WITH ORDINALITY AS t(value, ord)
-            ),
-            inserted AS (
-                INSERT INTO {self._table_name} ({self._jsonb_column})
-                SELECT json_value FROM input_objects
-                ON CONFLICT ({self._jsonb_column}) DO NOTHING
-                RETURNING {self._id_column}, {self._jsonb_column}
-            ),
-            existing AS (
-                SELECT t.{self._id_column}, t.{self._jsonb_column}
-                FROM {self._table_name} t
-                JOIN input_objects io ON t.{self._jsonb_column} = io.json_value
-            )
-            SELECT COALESCE(i.{self._id_column}, e.{self._id_column}) as {self._id_column}, io.original_order
-            FROM input_objects io
-            LEFT JOIN inserted i ON io.json_value = i.{self._jsonb_column}
-            LEFT JOIN existing e ON io.json_value = e.{self._jsonb_column}
-            ORDER BY io.original_order
-        """
+        # Pre-build SQL queries using psycopg3 placeholder style
+        self._register_query = build_register_query(
+            self._table_name, self._id_column, self._jsonb_column, "%s"
+        )
+        self._register_batch_query = build_register_batch_query(
+            self._table_name, self._id_column, self._jsonb_column, "%s"
+        )
 
     def register_object(self, json_obj: JsonType) -> int:
         """
