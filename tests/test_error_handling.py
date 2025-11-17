@@ -14,7 +14,7 @@
 
 """Unit tests for error handling and edge cases using mocks."""
 
-from unittest.mock import AsyncMock, MagicMock, Mock, patch
+from unittest.mock import AsyncMock, MagicMock, patch
 
 import asyncpg
 import psycopg
