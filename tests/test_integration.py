@@ -496,9 +496,17 @@ class TestJsonRegisterCacheAsyncIntegration:
         batch_with_dupes = [
             {"type": "async_dupe_test", "value": "A", "timestamp": timestamp},
             {"type": "async_dupe_test", "value": "B", "timestamp": timestamp},
-            {"type": "async_dupe_test", "value": "A", "timestamp": timestamp},  # duplicate of index 0
+            {
+                "type": "async_dupe_test",
+                "value": "A",
+                "timestamp": timestamp,
+            },  # duplicate of index 0
             {"type": "async_dupe_test", "value": "C", "timestamp": timestamp},
-            {"type": "async_dupe_test", "value": "B", "timestamp": timestamp},  # duplicate of index 1
+            {
+                "type": "async_dupe_test",
+                "value": "B",
+                "timestamp": timestamp,
+            },  # duplicate of index 1
         ]
 
         dupe_ids = await cache.register_batch_objects(batch_with_dupes)

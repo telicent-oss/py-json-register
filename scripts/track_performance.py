@@ -190,9 +190,7 @@ def create_performance_markdown(
 def main():
     """Main entry point."""
     parser = argparse.ArgumentParser(description="Track performance benchmarks")
-    parser.add_argument(
-        "--baseline", action="store_true", help="Mark this run as a baseline"
-    )
+    parser.add_argument("--baseline", action="store_true", help="Mark this run as a baseline")
     parser.add_argument(
         "--output",
         type=Path,
