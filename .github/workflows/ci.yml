@@ -100,6 +100,8 @@ jobs:
     with:
       PYTHON_VERSION: "3.12"
       OS: "ubuntu-latest"
+      TEST_COMMAND: "pytest tests/ -v -m 'not integration' --ignore=tests/test_performance.py --ignore=tests/test_performance_simple.py"
+      SKIP_BUILD: false
 
   performance:
     name: Performance Tracking
