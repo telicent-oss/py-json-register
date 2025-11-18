@@ -59,6 +59,7 @@ markers = [
 
 [tool.mypy]
 python_version = "3.10"
+files = ["src/json_register"]
 no_implicit_optional = false
 ignore_missing_imports = true
 warn_return_any = true
