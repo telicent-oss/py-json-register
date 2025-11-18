@@ -157,7 +157,10 @@ def test_canonicalise_mixed_types():
     result = canonicalise_json(obj)
 
     # Keys should be sorted
-    expected = '{"array":[1,"two",3.0],"bool":true,"float":3.14,"null":null,"number":42,"object":{"nested":"value"},"string":"hello"}'
+    expected = (
+        '{"array":[1,"two",3.0],"bool":true,"float":3.14,"null":null,'
+        '"number":42,"object":{"nested":"value"},"string":"hello"}'
+    )
     assert result == expected
 
 

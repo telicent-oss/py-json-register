@@ -194,9 +194,7 @@ class TestAsyncErrorHandling:
     @pytest.mark.asyncio
     async def test_connection_pool_creation_failure(self):
         """Test that connection pool creation failure raises ConnectionError."""
-        with patch(
-            "json_register.async_.asyncpg.create_pool", new_callable=AsyncMock
-        ) as mock_create_pool:
+        with patch("json_register.async_.asyncpg.create_pool", new_callable=AsyncMock) as mock_create_pool:
             mock_create_pool.side_effect = asyncpg.PostgresError("Connection failed")
 
             with pytest.raises(ConnectionError, match="Failed to create connection pool"):
@@ -212,9 +210,7 @@ class TestAsyncErrorHandling:
     @pytest.mark.asyncio
     async def test_connection_pool_returns_none(self):
         """Test that None pool raises ConnectionError."""
-        with patch(
-            "json_register.async_.asyncpg.create_pool", new_callable=AsyncMock
-        ) as mock_create_pool:
+        with patch("json_register.async_.asyncpg.create_pool", new_callable=AsyncMock) as mock_create_pool:
             mock_create_pool.return_value = None
 
             with pytest.raises(ConnectionError, match="Failed to create connection pool"):
@@ -230,9 +226,7 @@ class TestAsyncErrorHandling:
     @pytest.mark.asyncio
     async def test_register_object_database_error(self):
         """Test that database errors during register_object raise ConnectionError."""
-        with patch(
-            "json_register.async_.asyncpg.create_pool", new_callable=AsyncMock
-        ) as mock_create_pool:
+        with patch("json_register.async_.asyncpg.create_pool", new_callable=AsyncMock) as mock_create_pool:
             # Mock the connection pool
             mock_pool = MagicMock()
             mock_create_pool.return_value = mock_pool
@@ -257,9 +251,7 @@ class TestAsyncErrorHandling:
     @pytest.mark.asyncio
     async def test_register_object_no_results(self):
         """Test that no results from query raises InvalidResponseError."""
-        with patch(
-            "json_register.async_.asyncpg.create_pool", new_callable=AsyncMock
-        ) as mock_create_pool:
+        with patch("json_register.async_.asyncpg.create_pool", new_callable=AsyncMock) as mock_create_pool:
             mock_pool = MagicMock()
             mock_create_pool.return_value = mock_pool
 
@@ -283,9 +275,7 @@ class TestAsyncErrorHandling:
     @pytest.mark.asyncio
     async def test_register_batch_objects_database_error(self):
         """Test that database errors during batch registration raise ConnectionError."""
-        with patch(
-            "json_register.async_.asyncpg.create_pool", new_callable=AsyncMock
-        ) as mock_create_pool:
+        with patch("json_register.async_.asyncpg.create_pool", new_callable=AsyncMock) as mock_create_pool:
             mock_pool = MagicMock()
             mock_create_pool.return_value = mock_pool
 
@@ -309,9 +299,7 @@ class TestAsyncErrorHandling:
     @pytest.mark.asyncio
     async def test_register_batch_objects_wrong_result_count(self):
         """Test that mismatched result count raises InvalidResponseError."""
-        with patch(
-            "json_register.async_.asyncpg.create_pool", new_callable=AsyncMock
-        ) as mock_create_pool:
+        with patch("json_register.async_.asyncpg.create_pool", new_callable=AsyncMock) as mock_create_pool:
             mock_pool = MagicMock()
             mock_create_pool.return_value = mock_pool
 
@@ -335,9 +323,7 @@ class TestAsyncErrorHandling:
     @pytest.mark.asyncio
     async def test_async_context_manager(self):
         """Test that async context manager properly closes connections."""
-        with patch(
-            "json_register.async_.asyncpg.create_pool", new_callable=AsyncMock
-        ) as mock_create_pool:
+        with patch("json_register.async_.asyncpg.create_pool", new_callable=AsyncMock) as mock_create_pool:
             mock_pool = MagicMock()
             mock_pool.close = AsyncMock()
             mock_create_pool.return_value = mock_pool
@@ -358,9 +344,7 @@ class TestAsyncErrorHandling:
     @pytest.mark.asyncio
     async def test_close_idempotent(self):
         """Test that close can be called multiple times safely."""
-        with patch(
-            "json_register.async_.asyncpg.create_pool", new_callable=AsyncMock
-        ) as mock_create_pool:
+        with patch("json_register.async_.asyncpg.create_pool", new_callable=AsyncMock) as mock_create_pool:
             mock_pool = MagicMock()
             mock_pool.close = AsyncMock()
             mock_create_pool.return_value = mock_pool

@@ -34,7 +34,6 @@ import pytest
 
 from json_register import JsonRegisterCache, JsonRegisterCacheAsync
 
-
 # Test configuration - uses environment variables in CI, falls back to local config
 TEST_CONFIG = {
     "database_name": os.getenv("TEST_DB_NAME", "access"),
@@ -181,10 +180,7 @@ class TestJsonRegisterCacheIntegration:
         timestamp = int(time.time() * 1000000)
 
         # Create larger batch
-        objects = [
-            {"test": "large_batch", "timestamp": timestamp, "index": i, "data": f"item_{i}"}
-            for i in range(20)
-        ]
+        objects = [{"test": "large_batch", "timestamp": timestamp, "index": i, "data": f"item_{i}"} for i in range(20)]
 
         batch_ids = cache.register_batch_objects(objects)
         assert len(batch_ids) == 20, "Should return 20 IDs"
@@ -196,9 +192,7 @@ class TestJsonRegisterCacheIntegration:
 
         # Re-register same batch - should get identical IDs in same order
         batch_ids_repeat = cache.register_batch_objects(objects)
-        assert (
-            batch_ids == batch_ids_repeat
-        ), "Re-registering same batch should return same IDs in same order"
+        assert batch_ids == batch_ids_repeat, "Re-registering same batch should return same IDs in same order"
 
         cache.close()
 
@@ -258,9 +252,9 @@ class TestJsonRegisterCacheIntegration:
         # Verify order is preserved by re-registering each object individually
         for i, obj in enumerate(batch):
             individual_id = cache.register_object(obj)
-            assert (
-                batch_ids[i] == individual_id
-            ), f"Object at index {i} should have consistent ID: batch={batch_ids[i]}, individual={individual_id}"
+            assert batch_ids[i] == individual_id, (
+                f"Object at index {i} should have consistent ID: batch={batch_ids[i]}, individual={individual_id}"
+            )
 
         # Test with duplicates in the same batch
         batch_with_dupes = [
@@ -412,8 +406,7 @@ class TestJsonRegisterCacheAsyncIntegration:
 
         # Create larger batch
         objects = [
-            {"test": "async_large_batch", "timestamp": timestamp, "index": i, "data": f"item_{i}"}
-            for i in range(20)
+            {"test": "async_large_batch", "timestamp": timestamp, "index": i, "data": f"item_{i}"} for i in range(20)
         ]
 
         batch_ids = await cache.register_batch_objects(objects)
@@ -426,9 +419,7 @@ class TestJsonRegisterCacheAsyncIntegration:
 
         # Re-register same batch - should get identical IDs in same order
         batch_ids_repeat = await cache.register_batch_objects(objects)
-        assert (
-            batch_ids == batch_ids_repeat
-        ), "Re-registering same batch should return same IDs in same order"
+        assert batch_ids == batch_ids_repeat, "Re-registering same batch should return same IDs in same order"
 
         await cache.close()
 
@@ -488,9 +479,9 @@ class TestJsonRegisterCacheAsyncIntegration:
         # Verify order is preserved by re-registering each object individually
         for i, obj in enumerate(batch):
             individual_id = await cache.register_object(obj)
-            assert (
-                batch_ids[i] == individual_id
-            ), f"Object at index {i} should have consistent ID: batch={batch_ids[i]}, individual={individual_id}"
+            assert batch_ids[i] == individual_id, (
+                f"Object at index {i} should have consistent ID: batch={batch_ids[i]}, individual={individual_id}"
+            )
 
         # Test with duplicates in the same batch
         batch_with_dupes = [

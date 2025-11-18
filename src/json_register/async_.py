@@ -15,14 +15,15 @@
 """Asynchronous JSON registration cache implementation."""
 
 import json
-from typing import Any, List
+from typing import Any
 
 import asyncpg
 from lru import LRU
 
 from ._canonicalise import JsonType, canonicalise_json
 from ._utils import build_register_batch_query, build_register_query, validate_config
-from .exceptions import ConnectionError as ConnError, InvalidResponseError
+from .exceptions import ConnectionError as ConnError
+from .exceptions import InvalidResponseError
 
 
 class JsonRegisterCacheAsync:
@@ -77,9 +78,7 @@ class JsonRegisterCacheAsync:
         self._cache: LRU[str, int] = LRU(lru_cache_size)
 
         # Pre-build SQL queries using asyncpg placeholder style
-        self._register_query = build_register_query(
-            self._table_name, self._id_column, self._jsonb_column, "$1"
-        )
+        self._register_query = build_register_query(self._table_name, self._id_column, self._jsonb_column, "$1")
         self._register_batch_query = build_register_batch_query(
             self._table_name, self._id_column, self._jsonb_column, "$1"
         )
@@ -213,7 +212,7 @@ class JsonRegisterCacheAsync:
 
         return obj_id
 
-    async def register_batch_objects(self, json_objects: List[JsonType]) -> List[int]:
+    async def register_batch_objects(self, json_objects: list[JsonType]) -> list[int]:
         """
         Register multiple JSON objects in batch and return their IDs in the same order.
 
@@ -270,7 +269,7 @@ class JsonRegisterCacheAsync:
             raise ConnError(f"Database error: {e}") from e
 
         # Update cache with all entries
-        for canonical, obj_id in zip(canonicals, ids):
+        for canonical, obj_id in zip(canonicals, ids, strict=True):
             self._cache[canonical] = obj_id
 
         return ids

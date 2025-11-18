@@ -186,9 +186,7 @@ class TestSyncPerformance:
         print("\n300 Objects Performance Comparison:")
         print(f"  DB WRITE:    {write_time * 1000:.2f}ms")
         print(f"  CACHE READ:  {cache_time * 1000:.2f}ms (speedup: {write_time / cache_time:.1f}x)")
-        print(
-            f"  DB READ:     {db_read_time * 1000:.2f}ms (speedup: {write_time / db_read_time:.1f}x)"
-        )
+        print(f"  DB READ:     {db_read_time * 1000:.2f}ms (speedup: {write_time / db_read_time:.1f}x)")
 
     # Edge case tests
     def test_edge_case_very_small_objects(self, benchmark, sync_cache, json_generator):
@@ -243,9 +241,7 @@ class TestSyncPerformance:
         """Benchmark batch with duplicate objects."""
         obj = json_generator.generate_profile("medium")
         # Create batch with 50% duplicates
-        objects = [
-            obj if i % 2 == 0 else json_generator.generate_profile("medium") for i in range(100)
-        ]
+        objects = [obj if i % 2 == 0 else json_generator.generate_profile("medium") for i in range(100)]
         result = benchmark(sync_cache.register_batch_objects, objects)
         assert len(result) == 100
 

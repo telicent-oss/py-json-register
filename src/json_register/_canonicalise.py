@@ -20,12 +20,12 @@ with the same content but different key orders produce identical strings.
 """
 
 import json
-from typing import Any, Dict, List, Union
+from typing import Any
 
 from .exceptions import CanonicalisationError
 
 # Type alias for JSON-compatible types
-JsonType = Union[Dict[str, Any], List[Any], str, int, float, bool, None]
+JsonType = dict[str, Any] | list[Any] | str | int | float | bool | None
 
 
 def canonicalise_json(obj: JsonType) -> str:

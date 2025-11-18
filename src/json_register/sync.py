@@ -15,7 +15,7 @@
 """Synchronous JSON registration cache implementation."""
 
 import json
-from typing import Any, List
+from typing import Any
 
 import psycopg
 from lru import LRU
@@ -24,7 +24,8 @@ from psycopg_pool import ConnectionPool
 
 from ._canonicalise import JsonType, canonicalise_json
 from ._utils import build_register_batch_query, build_register_query, validate_config
-from .exceptions import ConnectionError as ConnError, InvalidResponseError
+from .exceptions import ConnectionError as ConnError
+from .exceptions import InvalidResponseError
 
 
 class JsonRegisterCache:
@@ -122,9 +123,7 @@ class JsonRegisterCache:
             raise ConnError(f"Failed to create connection pool: {e}") from e
 
         # Pre-build SQL queries using psycopg3 placeholder style
-        self._register_query = build_register_query(
-            self._table_name, self._id_column, self._jsonb_column, "%s"
-        )
+        self._register_query = build_register_query(self._table_name, self._id_column, self._jsonb_column, "%s")
         self._register_batch_query = build_register_batch_query(
             self._table_name, self._id_column, self._jsonb_column, "%s"
         )
@@ -181,7 +180,7 @@ class JsonRegisterCache:
 
         return obj_id
 
-    def register_batch_objects(self, json_objects: List[JsonType]) -> List[int]:
+    def register_batch_objects(self, json_objects: list[JsonType]) -> list[int]:
         """
         Register multiple JSON objects in batch and return their IDs in the same order.
 
@@ -238,7 +237,7 @@ class JsonRegisterCache:
             raise ConnError(f"Database error: {e}") from e
 
         # Update cache with all entries
-        for canonical, obj_id in zip(canonicals, ids):
+        for canonical, obj_id in zip(canonicals, ids, strict=True):
             self._cache[canonical] = obj_id
 
         return ids

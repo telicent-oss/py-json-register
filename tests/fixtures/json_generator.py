@@ -16,10 +16,10 @@
 
 import random
 import string
-from typing import Any, Dict, List, Union
+from typing import Any
 
 # Type alias for JSON-compatible types
-JsonValue = Union[Dict[str, Any], List[Any], str, int, float, bool, None]
+JsonValue = dict[str, Any] | list[Any] | str | int | float | bool | None
 
 
 class RandomJsonGenerator:
@@ -71,15 +71,13 @@ class RandomJsonGenerator:
             list_length = self.rng.randint(0, 10)
             return [self.generate_value(depth + 1, max_depth) for _ in range(list_length)]
         elif value_type == "dict":
-            return self.generate_object(
-                min_keys=1, max_keys=10, depth=depth + 1, max_depth=max_depth
-            )
+            return self.generate_object(min_keys=1, max_keys=10, depth=depth + 1, max_depth=max_depth)
         else:
             return None
 
     def generate_object(
         self, min_keys: int = 1, max_keys: int = 20, depth: int = 0, max_depth: int = 3
-    ) -> Dict[str, JsonValue]:
+    ) -> dict[str, JsonValue]:
         """
         Generate a random JSON object.
 
@@ -93,7 +91,7 @@ class RandomJsonGenerator:
             A random JSON object
         """
         num_keys = self.rng.randint(min_keys, max_keys)
-        obj: Dict[str, JsonValue] = {}
+        obj: dict[str, JsonValue] = {}
 
         for i in range(num_keys):
             # Generate unique key
@@ -109,7 +107,7 @@ class RandomJsonGenerator:
         max_keys: int = 20,
         max_depth: int = 3,
         unique: bool = True,
-    ) -> List[Dict[str, JsonValue]]:
+    ) -> list[dict[str, JsonValue]]:
         """
         Generate a batch of random JSON objects.
 
@@ -147,7 +145,7 @@ class RandomJsonGenerator:
 
         return objects
 
-    def generate_profile(self, profile_name: str) -> Dict[str, JsonValue]:
+    def generate_profile(self, profile_name: str) -> dict[str, JsonValue]:
         """
         Generate a JSON object based on a predefined profile.
 

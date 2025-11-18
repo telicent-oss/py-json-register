@@ -19,7 +19,6 @@ import pytest
 from json_register import JsonRegisterCache, JsonRegisterCacheAsync
 from json_register.exceptions import ConfigurationError
 
-
 # Valid base configuration for testing
 VALID_CONFIG = {
     "database_name": "testdb",

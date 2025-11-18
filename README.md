@@ -5,7 +5,7 @@
 [![Python Version](https://img.shields.io/badge/python-3.8%2B-blue.svg)](https://www.python.org)
 [![CI](https://github.com/telicent-oss/py-json-register/actions/workflows/ci.yml/badge.svg)](https://github.com/telicent-oss/py-json-register/actions/workflows/ci.yml)
 
-> **⚠️ Beta Software**: This library is in active development. The API may change between versions.
+> **Beta Software**: This library is in active development. The API may change between versions.
 
 A JSON registration cache for Python with PostgreSQL backend.
 
@@ -33,37 +33,6 @@ pip install -e .
 ```bash
 pip install -i https://test.pypi.org/simple/ json-register
 ```
-
-## Current Status
-
-**✅ Implemented:**
-- Package structure
-- JSON canonicalisation helper
-- `JsonRegisterCache` (synchronous implementation)
-- `JsonRegisterCacheAsync` (asynchronous implementation)
-- Connection pooling for both sync and async
-- LRU caching
-- Exception hierarchy
-- Type hints throughout
-- Comprehensive unit tests (74 tests, 90% coverage)
-  - JSON canonicalisation tests (17 tests)
-  - Configuration validation tests (27 tests)
-  - Error handling tests (15 tests)
-  - Integration tests with PostgreSQL (12 tests)
-- Performance testing infrastructure
-  - Random JSON data generator
-  - Benchmark suite with pytest-benchmark
-  - Performance tracking across commits
-  - Write/Cache/DB read comparisons
-- GitHub Actions CI/CD pipeline
-  - Multi-version testing (Python 3.8-3.12)
-  - PostgreSQL service container
-  - Code quality checks (Black, Ruff, Mypy)
-  - Coverage reporting
-
-**📝 TODO:**
-- PyPI publishing
-- Additional documentation
 
 ## Implementation Details
 
@@ -188,40 +157,6 @@ CREATE TABLE json_objects (
 CREATE INDEX idx_json_objects_json_object ON json_objects USING gin(json_object);
 ```
 
-### Implementation Checklist
-
-- [x] Create package structure (`json_register/`)
-- [x] Implement JSON canonicalisation helper
-- [x] Implement `JsonRegisterCache` (sync version)
-  - [x] Connection pooling with psycopg3
-  - [x] LRU cache integration
-  - [x] `register_object` method
-  - [x] `register_batch_objects` method
-- [x] Implement `JsonRegisterCacheAsync` (async version)
-  - [x] Connection pooling with asyncpg
-  - [x] LRU cache integration
-  - [x] `register_object` async method
-  - [x] `register_batch_objects` async method
-- [x] Write unit tests
-  - [x] Test JSON canonicalisation
-  - [ ] Test cache hits/misses
-  - [ ] Test single object registration
-  - [ ] Test batch registration
-  - [ ] Test order preservation
-  - [ ] Test different key orders produce same IDs
-- [ ] Write integration tests (require PostgreSQL)
-  - [ ] Test with real database
-  - [ ] Test batch order preservation
-  - [ ] Test mixed existing/new objects
-- [ ] Documentation
-  - [ ] API reference
-  - [x] Usage examples
-  - [ ] Database setup guide
-- [x] Packaging
-  - [x] pyproject.toml with dependencies
-  - [x] Type hints throughout
-  - [x] py.typed marker for type checking
-
 ## Example Usage
 
 #### Synchronous
@@ -288,27 +223,7 @@ async def main():
 asyncio.run(main())
 ```
 
-### Design Decisions
 
-1. **Native Python over PyO3:**
-   - Simpler implementation
-   - Easier to maintain and debug
-   - Fast PostgreSQL drivers (asyncpg, psycopg3)
-   - LRU cache performance is sufficient for this use case
-
-2. **Connection Pooling:**
-   - Always enabled for both sync and async
-   - Improves performance under concurrent load
-
-3. **Cache Strategy:**
-   - Full canonical JSON string as key (not hash)
-   - Zero collision guarantee
-   - Simple "all or nothing" for batch operations
-
-4. **JSON Canonicalisation:**
-   - Standard library `json.dumps` with `sort_keys=True`
-   - Sufficient for key normalisation
-   - If RFC 8785 compliance needed later, can use `canonicaljson` package
 
 ### Limitations and Considerations
 
