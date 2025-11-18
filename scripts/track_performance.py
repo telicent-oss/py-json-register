@@ -32,10 +32,9 @@ import subprocess
 import sys
 from datetime import datetime
 from pathlib import Path
-from typing import Dict, List
 
 
-def run_command(cmd: List[str]) -> str:
+def run_command(cmd: list[str]) -> str:
     """Run a shell command and return output."""
     try:
         result = subprocess.run(cmd, capture_output=True, text=True, check=True)
@@ -45,7 +44,7 @@ def run_command(cmd: List[str]) -> str:
         return ""
 
 
-def get_git_info() -> Dict[str, str]:
+def get_git_info() -> dict[str, str]:
     """Get current git commit information."""
     return {
         "commit_hash": run_command(["git", "rev-parse", "--short", "HEAD"]),
@@ -92,7 +91,7 @@ def format_time(seconds: float) -> str:
         return f"{seconds:.2f}s"
 
 
-def parse_benchmark_results(json_file: Path) -> List[Dict]:
+def parse_benchmark_results(json_file: Path) -> list[dict]:
     """Parse pytest-benchmark JSON output."""
     with open(json_file) as f:
         data = json.load(f)
@@ -115,7 +114,7 @@ def parse_benchmark_results(json_file: Path) -> List[Dict]:
 
 
 def create_performance_markdown(
-    benchmarks: List[Dict], git_info: Dict[str, str], perf_file: Path, is_baseline: bool = False
+    benchmarks: list[dict], git_info: dict[str, str], perf_file: Path, is_baseline: bool = False
 ) -> None:
     """Create or append to PERFORMANCE.md with benchmark results."""
 
