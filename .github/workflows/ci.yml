@@ -96,33 +96,12 @@ jobs:
 
   code-quality:
     name: Code Quality
-    runs-on: ubuntu-latest
-
-    steps:
-      - uses: actions/checkout@v4
-
-      - name: Set up Python
-        uses: actions/setup-python@v5
-        with:
-          python-version: "3.12"
-          cache: 'pip'
-
-      - name: Install dependencies
-        run: |
-          python -m pip install --upgrade pip
-          pip install -e ".[dev]"
-
-      - name: Check code formatting with Ruff
-        run: |
-          ruff format --check src/ tests/
-
-      - name: Lint with Ruff
-        run: |
-          ruff check src/ tests/
-
-      - name: Type check with mypy
-        run: |
-          mypy
+    uses: telicent-oss/shared-workflows/.github/workflows/python-ci-qa.yml@main
+    with:
+      PYTHON_VERSION: "3.12"
+      OS: "ubuntu-latest"
+      SKIP_BUILD: true
+      TEST_COMMAND: "echo 'Tests run in test job'"
 
   performance:
     name: Performance Tracking
